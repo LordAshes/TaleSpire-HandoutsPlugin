@@ -16,7 +16,7 @@ namespace LordAshes
     {
         // Plugin info
         private const string Guid = "org.lordashes.plugins.handouts";
-        private const string Version = "1.0.2.0";
+        private const string Version = "1.0.3.0";
 
         // Configuration
         private ConfigEntry<KeyboardShortcut> triggerKey { get; set; }
@@ -45,25 +45,23 @@ namespace LordAshes
             if(!System.IO.Directory.Exists(dir))
             {
                 UnityEngine.Debug.LogWarning("Lord Ashes Handouts Plugin requires the custom folder '" + dir + "'. This folder is missing on your device. Attempting to create.");
-                try
-                {
-                    System.IO.Directory.CreateDirectory(dir);
-                }
-                catch(Exception)
-                {
-                    UnityEngine.Debug.LogError("Unable to make custom folder '" + dir + "'. Please create this folder manually.");
-                }
+                try { System.IO.Directory.CreateDirectory(dir); } catch(Exception) { UnityEngine.Debug.LogError("Unable to make custom folder '" + dir + "'. Please create this folder manually."); }
+            }
+            if (!System.IO.Directory.Exists(dir+"Images/"))
+            {
+                UnityEngine.Debug.LogWarning("Lord Ashes Handouts Plugin requires the custom folder '" + dir + "Images/'. This folder is missing on your device. Attempting to create.");
+                try { System.IO.Directory.CreateDirectory(dir+"Images/"); } catch (Exception) { UnityEngine.Debug.LogError("Unable to make custom folder '" + dir + "Images/'. Please create this folder manually."); }
             }
 
             triggerKey = Config.Bind("Hotkeys", "Open Handout Dialog Shortcut", new KeyboardShortcut(KeyCode.H, KeyCode.LeftControl));
 
             try
             {
-                System.IO.File.WriteAllBytes(dir + "TaleSpire.ico", Convert.FromBase64String(taleSpireIcoBase64));
+                System.IO.File.WriteAllBytes(dir + "Images/TaleSpire.ico", Convert.FromBase64String(taleSpireIcoBase64));
             }
             catch(Exception)
             {
-                UnityEngine.Debug.LogError("Unable to make TaleSpire.ico file. The custom folder '"+dir+"' may not exist or the plugin does not have permission to write to it.");
+                UnityEngine.Debug.LogError("Unable to make TaleSpire.ico file. The custom folder '"+dir+"/Images' may not exist or the plugin does not have permission to write to it.");
             }
         }
 
@@ -115,10 +113,10 @@ namespace LordAshes
                         bool validate = true;
                         if (!request.ToUpper().StartsWith("HTTP"))
                         {
-                            string[] matches = System.IO.Directory.EnumerateFiles(dir, request + ".*").ToArray();
+                            string[] matches = System.IO.Directory.EnumerateFiles(dir+"Images/", request + ".*").ToArray();
                             if (matches.Count() <= 0)
                             {
-                                SystemMessage.DisplayInfoText("Device does not have local handout '" + request + "'\r\nin 'TaleSpire\\TaleSpire_CustomData'");
+                                SystemMessage.DisplayInfoText("Device does not have local handout '" + request + "'\r\nin 'TaleSpire\\TaleSpire_CustomData\\Images'");
                                 validate = false;
                             }
                             else
