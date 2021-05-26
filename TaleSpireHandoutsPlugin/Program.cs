@@ -9,14 +9,14 @@ using System;
 using System.Collections.Generic;
 using BepInEx.Configuration;
 
-namespace CharacterView
+namespace LordAshes
 {
     [BepInPlugin(Guid, "Handouts Plug-In", Version)]
-    public class LocalTextToSpeechPlugin : BaseUnityPlugin
+    public class HandoutsPlugin : BaseUnityPlugin
     {
         // Plugin info
         private const string Guid = "org.lordashes.plugins.handouts";
-        private const string Version = "1.0.1.0";
+        private const string Version = "1.0.2.0";
 
         // Configuration
         private ConfigEntry<KeyboardShortcut> triggerKey { get; set; }
@@ -41,8 +41,30 @@ namespace CharacterView
         void Awake()
         {
             UnityEngine.Debug.Log("Lord Ashes Handouts Plugin Active.");
+
+            if(!System.IO.Directory.Exists(dir))
+            {
+                UnityEngine.Debug.LogWarning("Lord Ashes Handouts Plugin requires the custom folder '" + dir + "'. This folder is missing on your device. Attempting to create.");
+                try
+                {
+                    System.IO.Directory.CreateDirectory(dir);
+                }
+                catch(Exception)
+                {
+                    UnityEngine.Debug.LogError("Unable to make custom folder '" + dir + "'. Please create this folder manually.");
+                }
+            }
+
             triggerKey = Config.Bind("Hotkeys", "Open Handout Dialog Shortcut", new KeyboardShortcut(KeyCode.H, KeyCode.LeftControl));
-            System.IO.File.WriteAllBytes(dir + "TaleSpire.ico", Convert.FromBase64String(taleSpireIcoBase64));
+
+            try
+            {
+                System.IO.File.WriteAllBytes(dir + "TaleSpire.ico", Convert.FromBase64String(taleSpireIcoBase64));
+            }
+            catch(Exception)
+            {
+                UnityEngine.Debug.LogError("Unable to make TaleSpire.ico file. The custom folder '"+dir+"' may not exist or the plugin does not have permission to write to it.");
+            }
         }
 
         /// <summary>
@@ -89,38 +111,64 @@ namespace CharacterView
                         // Create a new form with picturebox and the indicated image content
                         string request = texts[i].text.Substring("[Handout] ".Length);
 
-                        handout = new System.Windows.Forms.Form();
-                        handout.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
-                        handout.BackColor = System.Drawing.Color.Black;
-                        handout.ForeColor = System.Drawing.Color.Orange;
-                        try{ handout.Icon = new System.Drawing.Icon(dir + "TaleSpire.ico"); } catch (Exception) {; }
-                        handout.Left = 0;
-                        handout.Top = 0;
-                        handout.Width = 10;
-                        handout.Height = 10;
-                        handoutPB = new System.Windows.Forms.PictureBox();
-                        handoutPB.Left = 0;
-                        handoutPB.Top = 0;
-                        handoutPB.SizeChanged += (s, e) =>
-                        {
-                            handout.Width = handoutPB.Width + 20;
-                            handout.Height = handoutPB.Height + 43;
-                            handout.Left = (Screen.width - handout.Width) / 2;
-                            handout.Top = (Screen.height - handout.Height) / 2;
-                        };
-                        handoutPB.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
-                        handout.Controls.Add(handoutPB);
-                        handout.Text = "Handout";
-                        handout.ControlBox = true;
-                        handout.MinimizeBox = false;
-                        handout.MaximizeBox = false;
-
                         // If file does not start with HTTP then it is a local file. Find the file matching the specifiction
-                        if (!request.ToUpper().StartsWith("HTTP")) { request = System.IO.Directory.EnumerateFiles(dir, request + ".*").ToArray()[0]; }
+                        bool validate = true;
+                        if (!request.ToUpper().StartsWith("HTTP"))
+                        {
+                            string[] matches = System.IO.Directory.EnumerateFiles(dir, request + ".*").ToArray();
+                            if (matches.Count() <= 0)
+                            {
+                                SystemMessage.DisplayInfoText("Device does not have local handout '" + request + "'\r\nin 'TaleSpire\\TaleSpire_CustomData'");
+                                validate = false;
+                            }
+                            else
+                            {
+                                request = matches[0];
+                            }
+                        }
 
-                        // Load the specified file
-                        handoutPB.Load(request);
-                        handout.Show();
+                        if (validate)
+                        {
+                            handout = new System.Windows.Forms.Form();
+                            handout.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
+                            handout.BackColor = System.Drawing.Color.Black;
+                            handout.ForeColor = System.Drawing.Color.Orange;
+                            try { handout.Icon = new System.Drawing.Icon(dir + "TaleSpire.ico"); } catch (Exception) {; }
+                            handout.Left = 0;
+                            handout.Top = 0;
+                            handout.Width = 10;
+                            handout.Height = 10;
+                            handoutPB = new System.Windows.Forms.PictureBox();
+                            handoutPB.Left = 0;
+                            handoutPB.Top = 0;
+                            handoutPB.SizeChanged += (s, e) =>
+                            {
+                                handout.Width = handoutPB.Width + 20;
+                                handout.Height = handoutPB.Height + 43;
+                                handout.Left = (Screen.width - handout.Width) / 2;
+                                handout.Top = (Screen.height - handout.Height) / 2;
+                            };
+                            handoutPB.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+                            handout.Controls.Add(handoutPB);
+                            handout.Text = "Handout";
+                            handout.ControlBox = true;
+                            handout.MinimizeBox = false;
+                            handout.MaximizeBox = false;
+
+                            // Load the specified file
+                            try
+                            {
+                                UnityEngine.Debug.Log("Loading Handout '" + request + "'");
+                                handoutPB.Load(request);
+                                handout.Show();
+                            }
+                            catch (Exception)
+                            {
+                                SystemMessage.DisplayInfoText("Trouble accessing handout\r\n'" + request + "'");
+                                handout.Hide();
+                                handout.Dispose();
+                            }
+                        }
                     }
                 }
             }
