@@ -23,3 +23,7 @@ This will open a dialog box.
 
 To use web URL type the entire URL. Make sure that the URL starts with HTTP (or HTTPS). 
 To use a local image, type the image name without the path or the extension.  
+
+## Change Log
+
+1.0.3: Expected local handout images are now expected in TaleSpire_CustomData/Images
