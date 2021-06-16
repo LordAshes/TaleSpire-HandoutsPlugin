@@ -16,7 +16,7 @@ namespace LordAshes
     {
         // Plugin info
         private const string Guid = "org.lordashes.plugins.handouts";
-        private const string Version = "1.0.3.0";
+        private const string Version = "1.0.4.0";
 
         // Configuration
         private ConfigEntry<KeyboardShortcut> triggerKey { get; set; }
@@ -63,6 +63,9 @@ namespace LordAshes
             {
                 UnityEngine.Debug.LogError("Unable to make TaleSpire.ico file. The custom folder '"+dir+"/Images' may not exist or the plugin does not have permission to write to it.");
             }
+
+            // Post plugin to the TaleSpire main page
+            StateDetection.Initialize(this.GetType());
         }
 
         /// <summary>
