@@ -26,4 +26,5 @@ To use a local image, type the image name without the path or the extension.
 
 ## Change Log
 
+1.0.5: Relinked assembles after BR update
 1.0.3: Expected local handout images are now expected in TaleSpire_CustomData/Images
