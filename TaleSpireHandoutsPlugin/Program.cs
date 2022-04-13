@@ -16,7 +16,7 @@ namespace LordAshes
     {
         // Plugin info
         private const string Guid = "org.lordashes.plugins.handouts";
-        private const string Version = "1.0.4.0";
+        private const string Version = "1.0.5.0";
 
         // Configuration
         private ConfigEntry<KeyboardShortcut> triggerKey { get; set; }
